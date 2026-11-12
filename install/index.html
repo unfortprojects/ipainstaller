@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Установка</title>
+<style>
+  body { font: 16px system-ui, sans-serif; max-width: 640px; margin: 48px auto; padding: 0 20px; }
+  #toast { position: fixed; left: 50%; top: 20px; transform: translateX(-50%); max-width: 90%; padding: 14px 18px; border-radius: 10px; background: #222; color: #fff; box-shadow: 0 4px 18px #0004; }
+  #toast.warning { background: #b45309; }
+  a { color: #06c; }
+</style>
+<p id="message">Проверяем браузер…</p>
+<p><a id="fallback" hidden>Открыть установку</a></p>
+<div id="toast" hidden></div>
+<script>
+  const manifest = new URLSearchParams(location.search).get('manifest');
+  const message = document.getElementById('message');
+  const fallback = document.getElementById('fallback');
+  const toast = document.getElementById('toast');
+
+  function showToast(text, warning = false) {
+    toast.textContent = text;
+    toast.className = warning ? 'warning' : '';
+    toast.hidden = false;
+  }
+
+  function isSafari() {
+    const ua = navigator.userAgent;
+    const isAppleDevice = /iPhone|iPad|iPod|Macintosh/i.test(ua);
+    const isSafariEngine = /Safari/i.test(ua);
+    const isOtherBrowser = /CriOS|FxiOS|EdgiOS|OPiOS|Chrome|Firefox|Edg|OPR/i.test(ua);
+    return isAppleDevice && isSafariEngine && !isOtherBrowser;
+  }
+
+  if (!manifest) {
+    message.textContent = 'Не указан manifest.';
+  } else {
+    const url = 'itms-services://?action=download-manifest&url=' + encodeURIComponent(manifest);
+    fallback.href = url;
+    fallback.hidden = false;
+    if (isSafari()) {
+      message.textContent = 'Открываем установку в Safari…';
+      setTimeout(() => location.replace(url), 100);
+    } else {
+      message.textContent = 'Откройте эту ссылку в Safari на iPhone или iPad.';
+      showToast('Установка работает только в Safari. Откройте ссылку через меню «Поделиться» → Safari.', true);
+    }
+  }
+</script>
+</html>
